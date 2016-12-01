@@ -1,7 +1,6 @@
 # Tic Tac Toe Problem
 
 board = []
-3.times { board << [0, 0, 0] }
 
 def prompt(message)
   puts ">>>>>> #{message}"
@@ -66,10 +65,12 @@ def win?(board, n)
     (board[0][2] == n && board[1][1] == n && board[2][0] == n)
 end
 
-def reste_board(board)
+def reset_board(board)
   board.clear
   3.times { board << [0, 0, 0] }
 end
+
+reset_board(board)
 
 loop do
   display_borard(board)
@@ -86,19 +87,19 @@ loop do
     prompt "Another round?"
     answer = gets.chomp
     break unless answer.downcase.start_with?('y')
-    reste_board(board)
+    reset_board(board)
   elsif win?(board, 2)
     puts "Computer is winner!"
     prompt "Another round?"
     answer = gets.chomp
     break unless answer.downcase.start_with?('y')
-    reste_board(board)
+    reset_board(board)
   elsif board_full?(board)
     puts "tie~~~~"
     prompt "Another round?"
     answer = gets.chomp
     break unless answer.downcase.start_with?('y')
-    reste_board(board)
+    reset_board(board)
   end
 end
 
