@@ -89,13 +89,13 @@ loop do
     break unless answer.downcase.start_with?('y')
     reset_board(board)
   elsif win?(board, 2)
-    puts "Computer is winner!"
+    prompt "Computer is winner!"
     prompt "Another round?"
     answer = gets.chomp
     break unless answer.downcase.start_with?('y')
     reset_board(board)
   elsif board_full?(board)
-    puts "tie~~~~"
+    prompt "tie~~~~"
     prompt "Another round?"
     answer = gets.chomp
     break unless answer.downcase.start_with?('y')
