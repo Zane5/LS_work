@@ -9,6 +9,7 @@ COMPUTER_MARKER = 'O'.freeze
 WINNING_LINE = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                [[1, 5, 9], [3, 5, 7]]              # diagonals
+FIRST_PLAYER = 'choose'.freeze # 'choose', 'computer' or 'player'
 
 def prompt(message)
   puts ">>>>>> #{message}"
@@ -50,12 +51,6 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
-def find_at_risk_square(line, board, marker)
-  if board.values_at(*line).count(marker) == 2
-    board.select { |k, v| line.include?(k) && v == INITIAL_MARKER }.keys.first
-  end
-end
-
 def player_places_piece!(brd)
   square = ''
   loop do
@@ -68,27 +63,31 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
+def find_at_risk_square(line, brd, marker)
+  if brd.values_at(*line).count(marker) == 2
+    brd.select { |k, v| line.include?(k) && v == INITIAL_MARKER }.keys.first
+  end
+end
+
+def computer_place_strategy(squ, brd, marker)
+  WINNING_LINE.each do |line|
+    squ = find_at_risk_square(line, brd, marker)
+    break if squ
+  end
+  squ
+end
+
 def computer_places_piece!(brd)
   square = nil
 
-  # defense first
-  WINNING_LINE.each do |line|
-    square = find_at_risk_square(line, brd, PLAYER_MARKER)
-    break if square
-  end
-
   # offense
-  if !square
-    WINNING_LINE.each do |line|
-      square = find_at_risk_square(line, brd, COMPUTER_MARKER)
-      break if square
-    end
-  end
+  square = computer_place_strategy(square, brd, COMPUTER_MARKER)
 
-  # just pick a square
-  if !square
-    square = empty_squares(brd).sample
-  end
+  # defense
+  square = computer_place_strategy(square, brd, PLAYER_MARKER) unless square
+
+  square = 5 if brd[5] == INITIAL_MARKER && !square
+  square = empty_squares(brd).sample unless square
 
   brd[square] = COMPUTER_MARKER
 end
@@ -104,9 +103,9 @@ end
 def detect_winner(brd)
   WINNING_LINE.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
-      return 'Player'
+      return 'player'
     elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
-      return 'Computer'
+      return 'computer'
     end
   end
   nil
@@ -139,24 +138,60 @@ def finally_result(p_score, c_score)
   end
 end
 
+def first_player(curr_p)
+  if FIRST_PLAYER == 'choose'
+    loop do
+      prompt "Please choose who places first, Player(P) or Computer(C)?"
+      answer = gets.chomp
+      if answer.downcase.start_with?('p')
+        curr_p = 'player'
+        break
+      else answer.downcase.start_with?('c')
+        curr_p = 'computer'
+        break
+      end
+    end
+    curr_p
+  elsif FIRST_PLAYER == 'player'
+    curr_p = 'player'
+  else
+    curr_p = 'computer'
+  end
+end
+
+def places_piece!(brd, curr_p)
+  if curr_p == 'player'
+   player_places_piece!(brd)
+  else
+   computer_places_piece!(brd)
+  end
+end
+
+def alternate_player(curr_p)
+  if curr_p == 'player'
+    curr_p = 'computer' 
+  else
+    curr_p = 'player'
+  end
+end
+
 loop do
   board = intalize_board
   player_score = computer_score = 0
+  current_player = nil
 
   while player_score < 5 && computer_score < 5
+    current_player = first_player(current_player)
     loop do
       display_board(board, player_score, computer_score)
-      player_places_piece!(board)
-      break if someone_win?(board) || board_full?(board)
-
-      computer_places_piece!(board)
-      display_board(board, player_score, computer_score)
+      places_piece!(board, current_player)
+      current_player = alternate_player(current_player)
       break if someone_win?(board) || board_full?(board)
     end
 
     winner = detect_winner(board)
-    player_score += 1 if winner == 'Player'
-    computer_score += 1 if winner == 'Computer'
+    player_score += 1 if winner == 'player'
+    computer_score += 1 if winner == 'computer'
 
     display_board(board, player_score, computer_score)
 
