@@ -19,11 +19,11 @@ def continue_game
   STDIN.getch
 end
 
-# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd, p_score = 0, c_score = 0)
   system 'clear'
   prompt "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}"
-  prompt "Player score is #{ p_score }. Computer score is #{ c_score }."
+  prompt "Player score is #{p_score}. Computer score is #{c_score}."
   prompt ""
   prompt "     |     |"
   prompt "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -38,7 +38,7 @@ def display_board(brd, p_score = 0, c_score = 0)
   prompt "     |     |"
   prompt ""
 end
-# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
 def intalize_board
   new_board = {}
@@ -48,6 +48,12 @@ end
 
 def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
+end
+
+def find_at_risk_square(line, board, marker)
+  if board.values_at(*line).count(marker) == 2
+    board.select { |k, v| line.include?(k) && v == INITIAL_MARKER }.keys.first
+  end
 end
 
 def player_places_piece!(brd)
@@ -63,7 +69,27 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = empty_squares(brd).sample
+  square = nil
+
+  # defense first
+  WINNING_LINE.each do |line|
+    square = find_at_risk_square(line, brd, PLAYER_MARKER)
+    break if square
+  end
+
+  # offense
+  if !square
+    WINNING_LINE.each do |line|
+      square = find_at_risk_square(line, brd, COMPUTER_MARKER)
+      break if square
+    end
+  end
+
+  # just pick a square
+  if !square
+    square = empty_squares(brd).sample
+  end
+
   brd[square] = COMPUTER_MARKER
 end
 
@@ -97,16 +123,29 @@ def joinor(arr, delimiter=', ', word='or')
   end
 end
 
+def round_result(winner)
+  if winner
+    prompt "This round #{winner} won!"
+  else
+    prompt "This round is a tie!"
+  end
+end
+
+def finally_result(p_score, c_score)
+  if p_score > c_score
+    prompt "Finally Player won!"
+  else
+    prompt "Finally Computer won!"
+  end
+end
+
 loop do
   board = intalize_board
+  player_score = computer_score = 0
 
-  player_score = 0
-  computer_score = 0
-
-  while player_score < 5 && computer_score < 5 do
+  while player_score < 5 && computer_score < 5
     loop do
       display_board(board, player_score, computer_score)
-
       player_places_piece!(board)
       break if someone_win?(board) || board_full?(board)
 
@@ -116,27 +155,17 @@ loop do
     end
 
     winner = detect_winner(board)
-    case winner
-    when 'Player' then player_score +=1
-    when 'Computer' then computer_score += 1
-    end
+    player_score += 1 if winner == 'Player'
+    computer_score += 1 if winner == 'Computer'
 
     display_board(board, player_score, computer_score)
 
-    if someone_win?(board)
-      prompt "This round #{ winner } won!"
-    else
-      prompt "This round is a tie!"
-    end
+    round_result(winner)
     continue_game
     board = intalize_board
   end
 
-  if player_score > computer_score
-    prompt "Finally Player won!"
-  else
-    prompt "Finally Computer won!"
-  end
+  finally_result(player_score, computer_score)
 
   prompt "Play again? (y or n)"
   answer = gets.chomp
