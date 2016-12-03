@@ -138,40 +138,44 @@ def finally_result(p_score, c_score)
   end
 end
 
+def choose_player(curr_p)
+  loop do
+    prompt "Please choose who places first, Player(P) or Computer(C)?"
+    answer = gets.chomp
+    if answer.downcase.start_with?('p')
+      curr_p = 'player'
+      break
+    elsif answer.downcase.start_with?('c')
+      curr_p = 'computer'
+      break
+    end
+  end
+  curr_p
+end
+
 def first_player(curr_p)
   if FIRST_PLAYER == 'choose'
-    loop do
-      prompt "Please choose who places first, Player(P) or Computer(C)?"
-      answer = gets.chomp
-      if answer.downcase.start_with?('p')
-        curr_p = 'player'
-        break
-      else answer.downcase.start_with?('c')
-        curr_p = 'computer'
-        break
-      end
-    end
-    curr_p
+    choose_player(curr_p)
   elsif FIRST_PLAYER == 'player'
-    curr_p = 'player'
+    'player'
   else
-    curr_p = 'computer'
+    'computer'
   end
 end
 
 def places_piece!(brd, curr_p)
   if curr_p == 'player'
-   player_places_piece!(brd)
+    player_places_piece!(brd)
   else
-   computer_places_piece!(brd)
+    computer_places_piece!(brd)
   end
 end
 
 def alternate_player(curr_p)
   if curr_p == 'player'
-    curr_p = 'computer' 
+    'computer'
   else
-    curr_p = 'player'
+    'player'
   end
 end
 
