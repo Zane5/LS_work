@@ -184,8 +184,8 @@ loop do
   player_score = computer_score = 0
   current_player = nil
 
+  current_player = first_player(current_player)
   while player_score < 5 && computer_score < 5
-    current_player = first_player(current_player)
     loop do
       display_board(board, player_score, computer_score)
       places_piece!(board, current_player)
