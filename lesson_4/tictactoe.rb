@@ -148,6 +148,8 @@ def choose_player(curr_p)
     elsif answer.downcase.start_with?('c')
       curr_p = 'computer'
       break
+    else
+      prompt "The input is invalid, please input P or C"
     end
   end
   curr_p
