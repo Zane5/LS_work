@@ -1,4 +1,9 @@
 # This is rock paper scissors game
+# keeping score in class Player
+# Add Lizard and Spock
+#
+RPS = %w[rock paper scissors spock lizard].freeze
+
 # module
 module Scores
   def display_add_point(player = human)
@@ -36,8 +41,6 @@ end
 
 # Move
 class Move
-  RPS = %w[rock paper scissors].freeze
-
   def initialize(value)
     @value = value
   end
@@ -54,16 +57,68 @@ class Move
     @value == 'paper'
   end
 
+  def lizard?
+    @value == 'lizard'
+  end
+
+  def spock?
+    @value == 'spock'
+  end
+
+  def rock_win?(other)
+    rock? && (other.scissors? || other.lizard?)
+  end
+
+  def paper_win?(other)
+    paper? && (other.rock? || other.spock?)
+  end
+
+  def scissors_win?(other)
+    scissors? && (other.paper? || other.lizard?)
+  end
+
+  def lizard_win?(other)
+    lizard? && (other.paper? || other.spock?)
+  end
+
+  def spock_win?(other)
+    spock? && (other.rock? || other.scissors?)
+  end
+
   def >(other)
-    (rock? && other.scissors?) ||
-      (paper? && other.rock?) ||
-      (scissors? && other.paper?)
+    rock_win?(other) ||
+      paper_win?(other) ||
+      scissors_win?(other) ||
+      lizard_win?(other) ||
+      spock_win?(other)
+  end
+
+  def rock_lose?(other)
+    rock? && (other.paper? || other.spock?)
+  end
+
+  def paper_lose?(other)
+    paper? && (other.scissors? || other.lizard?)
+  end
+
+  def scissors_lose?(other)
+    scissors? && (other.rock? || other.spock?)
+  end
+
+  def lizard_lose?(other)
+    lizard? && (other.rock? || other.scissors?)
+  end
+
+  def spock_lose?(other)
+    spock? && (other.paper? || other.lizard?)
   end
 
   def <(other)
-    (rock? && other.paper?) ||
-      (paper? && other.scissors?) ||
-      (scissors? && other.rock?)
+    rock_lose?(other) ||
+      paper_lose?(other) ||
+      scissors_lose?(other) ||
+      lizard_lose?(other) ||
+      spock_lose?(other)
   end
 
   def to_s
@@ -97,9 +152,11 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts 'Please choose rock, paper, or scissors'
-      choice = gets.chomp
-      break if Move::RPS.include? choice
+      puts 'Please choose 1.rock, 2.paper, 3.scissors, 4.spock 5.lizard'
+      puts 'Please input number 1, 2, 3, 4 or 5:'
+      input = gets.chomp.to_i
+      choice = RPS[input - 1] if [1, 2, 3, 4, 5].include? input
+      break if RPS.include? choice
       puts 'Sorry, invalid choice.'
     end
     self.move = Move.new(choice)
@@ -113,11 +170,11 @@ class Computer < Player
   end
 
   def choose
-    self.move = Move.new(Move::RPS.sample)
+    self.move = Move.new(RPS.sample)
   end
 end
 
-# main RPS
+# RPS
 class RPSGame
   include Scores
 
@@ -130,11 +187,11 @@ class RPSGame
   end
 
   def display_welcome_message
-    puts 'Welcome to Rock, Paper, Scissors!'
+    puts 'Welcome to Rock, Paper, Scissors, Spock, Scissors!'
   end
 
   def display_goodbye_message
-    puts 'Thans for playing Rock, Paper, Scissors. Good bye!'
+    puts 'Thans for playing Rock, Paper, Scissors, Spock, Scissors. Good bye!'
   end
 
   def display_moves
