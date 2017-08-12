@@ -3,7 +3,7 @@
 # Add Lizard and Spock
 #
 RPS = %w[rock paper scissors spock lizard].freeze
-POINTS = 3 # points per round
+POINTS = 10 # Whoever reaches 10 points first wins
 
 # class history
 class History
@@ -298,8 +298,12 @@ class RPSGame
     end
   end
 
-  def display_points
+  def display_a_line
     puts '~~~~~~~~~~~~~~~~~'
+  end
+
+  def display_points
+    display_a_line
     puts "#{human.name} get === #{human.scores.points} points ==="
     puts "#{computer.name} get === #{computer.scores.points} points ==="
   end
@@ -310,13 +314,13 @@ class RPSGame
   end
 
   def display_history
-    puts '~~~~~~~~~~~~~~~~~'
+    display_a_line
     puts "The history of #{human.name} is #{human.history.to_s}"
     puts "The history of #{computer.name} is #{computer.history.to_s}"
   end
 
   def display_win_round
-    puts '~~~~~~~~~~~~~~~~~'
+    display_a_line
     puts "#{human.name} won #{human.scores.win_round} rounds!"
     puts "#{computer.name} won #{computer.scores.win_round} rounds!"
   end
