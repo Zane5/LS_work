@@ -1,8 +1,26 @@
+require 'pry'
 # This is rock paper scissors game
 # create class Scores
 # Add Lizard and Spock
 #
 RPS = %w[rock paper scissors spock lizard].freeze
+
+# class history
+class History
+  attr_writer :history
+
+  def initialize
+    @history = []
+  end
+
+  def to_s
+    @history.map(&:to_s)
+  end
+
+  def <<(move)
+    @history << move
+  end
+end
 
 # class Scores
 class Scores
@@ -134,11 +152,16 @@ end
 
 # Player
 class Player
-  attr_accessor :move, :name, :scores
+  attr_accessor :move, :name, :scores, :history
 
   def initialize
     set_name
     self.scores = Scores.new
+    self.history = History.new
+  end
+
+  def keep_history(move)
+    self.history << move
   end
 end
 
@@ -176,7 +199,9 @@ class Human < Player
       puts 'Sorry, invalid choice.'
     end
     assign_choice(choice)
+    keep_history(self.move)
   end
+
 end
 
 # computer
@@ -188,6 +213,7 @@ class Computer < Player
   def choose
     self.move = [Rock.new, Paper.new, Scissors.new,
                  Lizard.new, Spock.new].sample
+    keep_history(self.move)
   end
 end
 
@@ -278,6 +304,11 @@ class RPSGame
     computer.scores.clear_points
   end
 
+  def display_history
+    puts "The history of #{human.name} is #{human.history.to_s}"
+    puts "The history of #{computer.name} is #{computer.history.to_s}"
+  end
+
   def play_round
     clear_points
     loop do
@@ -286,6 +317,7 @@ class RPSGame
       display_moves
       keep_scores
       display_points
+      display_history
       break if winner?
     end
   end
