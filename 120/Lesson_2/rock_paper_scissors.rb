@@ -4,11 +4,10 @@ require 'pry'
 # Add Lizard and Spock
 #
 RPS = %w[rock paper scissors spock lizard].freeze
+POINTS = 3 # points per round
 
 # class history
 class History
-  attr_writer :history
-
   def initialize
     @history = []
   end
@@ -24,19 +23,16 @@ end
 
 # class Scores
 class Scores
-  attr_reader :points
+  attr_reader :points, :win_round
 
   def initialize
     @points = 0
-    @round = 0
     @win_round = 0
-    @lose_round = 0
-    @tie_round = 0
   end
 
   def add_point
     @points += 1
-    @win_round += 1 if @points == 10
+    @win_round += 1 if @points == POINTS
   end
 
   def clear_points
@@ -161,7 +157,7 @@ class Player
   end
 
   def keep_history(move)
-    self.history << move
+    history << move
   end
 end
 
@@ -188,20 +184,32 @@ class Human < Player
     end
   end
 
-  def choose
+  def display_input_tips
+    puts '~~~~~~~~~~~~~~~~~',\
+         'Please choose 1.rock, 2.paper, 3.scissors, 4.spock 5.lizard',\
+         'Please input a number 1, 2, 3, 4 or 5:'
+  end
+
+  def input_choice(choice)
+    display_input_tips
+
     choice = nil
+
     loop do
-      puts 'Please choose 1.rock, 2.paper, 3.scissors, 4.spock 5.lizard'
-      puts 'Please input a number 1, 2, 3, 4 or 5:'
       input = gets.chomp.to_i
       choice = RPS[input - 1] if [1, 2, 3, 4, 5].include? input
       break if RPS.include? choice
       puts 'Sorry, invalid choice.'
     end
-    assign_choice(choice)
-    keep_history(self.move)
+
+    choice
   end
 
+  def choose
+    choice = input_choice(choice)
+    assign_choice(choice)
+    keep_history(move)
+  end
 end
 
 # computer
@@ -213,16 +221,13 @@ class Computer < Player
   def choose
     self.move = [Rock.new, Paper.new, Scissors.new,
                  Lizard.new, Spock.new].sample
-    keep_history(self.move)
+    keep_history(move)
   end
 end
 
 # RPS
 class RPSGame
   attr_accessor :human, :computer
-
-  # points per round
-  POINTS = 3
 
   def initialize
     @human = Human.new
@@ -246,8 +251,8 @@ class RPSGame
     (human.scores.points >= POINTS) || (computer.scores.points >= POINTS)
   end
 
-  def display_won(player)
-    puts "#{player.name} won!"
+  def display_winner_name(player)
+    puts "#{player.name} won this round!"
   end
 
   def display_winner
@@ -257,9 +262,9 @@ class RPSGame
     if c_p == POINTS && h_p == POINTS
       puts "It's a tie!"
     elsif c_p >= POINTS
-      display_won(computer)
+      display_winner_name(computer)
     else
-      display_won(human)
+      display_winner_name(human)
     end
   end
 
@@ -295,6 +300,7 @@ class RPSGame
   end
 
   def display_points
+    puts '~~~~~~~~~~~~~~~~~'
     puts "#{human.name} get === #{human.scores.points} points ==="
     puts "#{computer.name} get === #{computer.scores.points} points ==="
   end
@@ -305,8 +311,15 @@ class RPSGame
   end
 
   def display_history
+    puts '~~~~~~~~~~~~~~~~~'
     puts "The history of #{human.name} is #{human.history.to_s}"
     puts "The history of #{computer.name} is #{computer.history.to_s}"
+  end
+
+  def display_win_round
+    puts '~~~~~~~~~~~~~~~~~'
+    puts "#{human.name} won #{human.scores.win_round} rounds!"
+    puts "#{computer.name} won #{computer.scores.win_round} rounds!"
   end
 
   def play_round
@@ -327,6 +340,7 @@ class RPSGame
     loop do
       play_round
       display_winner
+      display_win_round
       break unless play_again?
     end
     display_goodbye_message
