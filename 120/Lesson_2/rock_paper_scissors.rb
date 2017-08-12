@@ -1,4 +1,3 @@
-require 'pry'
 # This is rock paper scissors game
 # create class Scores
 # Add Lizard and Spock
