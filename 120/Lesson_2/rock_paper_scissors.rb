@@ -1,41 +1,28 @@
 # This is rock paper scissors game
-# keeping score in class Player
+# create class Scores
 # Add Lizard and Spock
 #
 RPS = %w[rock paper scissors spock lizard].freeze
 
-# module
-module Scores
-  def display_add_point(player = human)
-    puts "#{player.name} won and just added 1 point"
+# class Scores
+class Scores
+  attr_reader :points
+
+  def initialize
+    @points = 0
+    @round = 0
+    @win_round = 0
+    @lose_round = 0
+    @tie_round = 0
   end
 
-  def add_point(player = human)
-    player.scores += 1
-    display_add_point(player)
+  def add_point
+    @points += 1
+    @win_round += 1 if @points == 10
   end
 
-  def keep_scores
-    hum_mv = human.move
-    com_mv = computer.move
-
-    if hum_mv > com_mv
-      add_point
-    elsif hum_mv < com_mv
-      add_point(computer)
-    else
-      puts "All player isn't add any point."
-    end
-  end
-
-  def clear_scores
-    human.scores = 0
-    computer.scores = 0
-  end
-
-  def display_scores
-    puts "#{human.name} get === #{human.scores} points ==="
-    puts "#{computer.name} get === #{computer.scores} points ==="
+  def clear_points
+    @points = 0
   end
 end
 
@@ -65,64 +52,94 @@ class Move
     @value == 'spock'
   end
 
-  def rock_win?(other)
-    rock? && (other.scissors? || other.lizard?)
-  end
+#  def >(other)
+#    rock_win?(other) ||
+#      paper_win?(other) ||
+#      scissors_win?(other) ||
+#      lizard_win?(other) ||
+#      spock_win?(other)
+#  end
 
-  def paper_win?(other)
-    paper? && (other.rock? || other.spock?)
-  end
-
-  def scissors_win?(other)
-    scissors? && (other.paper? || other.lizard?)
-  end
-
-  def lizard_win?(other)
-    lizard? && (other.paper? || other.spock?)
-  end
-
-  def spock_win?(other)
-    spock? && (other.rock? || other.scissors?)
-  end
-
-  def >(other)
-    rock_win?(other) ||
-      paper_win?(other) ||
-      scissors_win?(other) ||
-      lizard_win?(other) ||
-      spock_win?(other)
-  end
-
-  def rock_lose?(other)
-    rock? && (other.paper? || other.spock?)
-  end
-
-  def paper_lose?(other)
-    paper? && (other.scissors? || other.lizard?)
-  end
-
-  def scissors_lose?(other)
-    scissors? && (other.rock? || other.spock?)
-  end
-
-  def lizard_lose?(other)
-    lizard? && (other.rock? || other.scissors?)
-  end
-
-  def spock_lose?(other)
-    spock? && (other.paper? || other.lizard?)
-  end
-
-  def <(other)
-    rock_lose?(other) ||
-      paper_lose?(other) ||
-      scissors_lose?(other) ||
-      lizard_lose?(other) ||
-      spock_lose?(other)
-  end
+#  def <(other)
+#    rock_lose?(other) ||
+#      paper_lose?(other) ||
+#      scissors_lose?(other) ||
+#      lizard_lose?(other) ||
+#      spock_lose?(other)
+#  end
 
   def to_s
     @value
+  end
+end
+
+class Rock < Move
+  def initialize
+    @value = 'rock'
+  end
+
+  def >(other)
+    other.scissors? || other.lizard?
+  end
+
+  def <(other)
+    other.paper? || other.spock?
+  end
+end
+
+class Paper < Move
+  def initialize
+    @value = 'paper'
+  end
+
+  def >(other)
+    other.rock? || other.spock?
+  end
+
+  def <(other)
+    other.scissors? || other.lizard?
+  end
+end
+
+class Scissors < Move
+  def initialize
+    @value = 'scissors'
+  end
+
+  def >(other)
+    other.paper? || other.lizard?
+  end
+
+  def <(other)
+    other.rock? || other.spock?
+  end
+end
+
+class Lizard < Move
+  def initialize
+    @value = 'lizard'
+  end
+
+  def >(other)
+    other.paper? || other.spock?
+  end
+
+  def <(other)
+    other.rock? || other.scissors?
+  end
+end
+
+class Spock < Move
+  def initialize
+    @value = 'spock'
+  end
+
+  def >(other)
+    other.rock? || other.scissors?
+  end
+
+  def <(other)
+    other.paper? || other.lizard?
   end
 end
 
@@ -132,7 +149,7 @@ class Player
 
   def initialize
     set_name
-    @scores = 0
+    self.scores = Scores.new
   end
 end
 
@@ -149,6 +166,16 @@ class Human < Player
     self.name = n
   end
 
+  def assign_choice(choice)
+    case choice
+    when 'rock' then self.move = Rock.new
+    when 'paper' then self.move = Paper.new
+    when 'scissors' then self.move = Scissors.new
+    when 'lizard' then self.move = Lizard.new
+    when 'spock' then self.move = Spock.new
+    end
+  end
+  
   def choose
     choice = nil
     loop do
@@ -159,7 +186,7 @@ class Human < Player
       break if RPS.include? choice
       puts 'Sorry, invalid choice.'
     end
-    self.move = Move.new(choice)
+    assign_choice(choice)
   end
 end
 
@@ -170,14 +197,12 @@ class Computer < Player
   end
 
   def choose
-    self.move = Move.new(RPS.sample)
+    self.move = [Rock.new, Paper.new, Scissors.new, Lizard.new, Spock.new].sample
   end
 end
 
 # RPS
 class RPSGame
-  include Scores
-
   attr_accessor :human, :computer
   POINTS = 3
 
@@ -200,19 +225,23 @@ class RPSGame
   end
 
   def winner?
-    (human.scores >= POINTS) || (computer.scores >= POINTS)
+    (human.scores.points >= POINTS) || (computer.scores.points >= POINTS)
+  end
+
+  def display_won(player)
+    puts "#{player.name} won!"
   end
 
   def display_winner
-    com_s = computer.scores
-    hum_s = human.scores
+    c_p = computer.scores.points
+    h_p = human.scores.points
 
-    if com_s == POINTS && hum_s == POINTS
+    if c_p == POINTS && h_p == POINTS
       puts "It's a tie!"
-    elsif com_s >= POINTS
-      puts "#{computer.name} won!"
+    elsif c_p >= POINTS
+      display_won(computer)
     else
-      puts "#{human.name} won!"
+      display_won(human)
     end
   end
 
@@ -229,14 +258,42 @@ class RPSGame
     return true if answer == 'y'
   end
 
+  def add_one_point(player)
+    player.scores.add_point
+    puts "#{player.name} won and just added 1 point"
+  end
+
+  def keep_scores
+    hum_mv = human.move
+    com_mv = computer.move
+
+    if hum_mv > com_mv
+      add_one_point(human)
+    elsif hum_mv < com_mv
+      add_one_point(computer)
+    else
+      puts "All player isn't add any point."
+    end
+  end
+
+  def display_points
+    puts "#{human.name} get === #{human.scores.points} points ==="
+    puts "#{computer.name} get === #{computer.scores.points} points ==="
+  end
+
+  def clear_points
+    human.scores.clear_points
+    computer.scores.clear_points
+  end
+
   def play_round
-    clear_scores
+    clear_points
     loop do
       human.choose
       computer.choose
       display_moves
       keep_scores
-      display_scores
+      display_points
       break if winner?
     end
   end
