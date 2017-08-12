@@ -52,27 +52,12 @@ class Move
     @value == 'spock'
   end
 
-#  def >(other)
-#    rock_win?(other) ||
-#      paper_win?(other) ||
-#      scissors_win?(other) ||
-#      lizard_win?(other) ||
-#      spock_win?(other)
-#  end
-
-#  def <(other)
-#    rock_lose?(other) ||
-#      paper_lose?(other) ||
-#      scissors_lose?(other) ||
-#      lizard_lose?(other) ||
-#      spock_lose?(other)
-#  end
-
   def to_s
     @value
   end
 end
 
+# class Rock
 class Rock < Move
   def initialize
     @value = 'rock'
@@ -87,6 +72,7 @@ class Rock < Move
   end
 end
 
+# class Paper
 class Paper < Move
   def initialize
     @value = 'paper'
@@ -101,6 +87,7 @@ class Paper < Move
   end
 end
 
+# class Scissors
 class Scissors < Move
   def initialize
     @value = 'scissors'
@@ -115,6 +102,7 @@ class Scissors < Move
   end
 end
 
+# class Lizard
 class Lizard < Move
   def initialize
     @value = 'lizard'
@@ -129,6 +117,7 @@ class Lizard < Move
   end
 end
 
+# class Spock
 class Spock < Move
   def initialize
     @value = 'spock'
@@ -159,9 +148,9 @@ class Human < Player
     n = ''
     loop do
       puts "What's your name?"
-      n = gets.chomp
-      break unless n.empty?
-      puts 'Sorry, must enter a value.'
+      n = gets.chomp.delete ' '
+      break if n.index(/[a-z]/i)
+      puts 'Sorry, must enter at least one word character, a-z...'
     end
     self.name = n
   end
@@ -175,12 +164,12 @@ class Human < Player
     when 'spock' then self.move = Spock.new
     end
   end
-  
+
   def choose
     choice = nil
     loop do
       puts 'Please choose 1.rock, 2.paper, 3.scissors, 4.spock 5.lizard'
-      puts 'Please input number 1, 2, 3, 4 or 5:'
+      puts 'Please input a number 1, 2, 3, 4 or 5:'
       input = gets.chomp.to_i
       choice = RPS[input - 1] if [1, 2, 3, 4, 5].include? input
       break if RPS.include? choice
@@ -197,13 +186,16 @@ class Computer < Player
   end
 
   def choose
-    self.move = [Rock.new, Paper.new, Scissors.new, Lizard.new, Spock.new].sample
+    self.move = [Rock.new, Paper.new, Scissors.new,
+                 Lizard.new, Spock.new].sample
   end
 end
 
 # RPS
 class RPSGame
   attr_accessor :human, :computer
+
+  # points per round
   POINTS = 3
 
   def initialize
