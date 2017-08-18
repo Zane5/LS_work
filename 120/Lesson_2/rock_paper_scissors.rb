@@ -2,8 +2,6 @@
 # create class Scores
 # Add Lizard and Spock
 #
-RPS = %w[rock paper scissors spock lizard].freeze
-POINTS = 10 # Whoever reaches 10 points first wins
 
 # class history
 class History
@@ -11,7 +9,7 @@ class History
     @history = []
   end
 
-  def to_s
+  def display
     @history.map(&:to_s)
   end
 
@@ -20,8 +18,8 @@ class History
   end
 end
 
-# class Scores
-class Scores
+# class Score
+class Score
   attr_reader :points, :win_round
 
   def initialize
@@ -31,7 +29,7 @@ class Scores
 
   def add_point
     @points += 1
-    @win_round += 1 if @points == POINTS
+    @win_round += 1 if @points == RPSGame::POINTS
   end
 
   def clear_points
@@ -148,10 +146,11 @@ end
 # Player
 class Player
   attr_accessor :move, :name, :scores, :history
+  RPS = %w[rock paper scissors spock lizard].freeze
 
   def initialize
     set_name
-    self.scores = Scores.new
+    self.scores = Score.new
     self.history = History.new
   end
 
@@ -166,7 +165,7 @@ class Human < Player
     n = ''
     loop do
       puts "What's your name?"
-      n = gets.chomp.delete ' '
+      n = gets.chomp
       break if n.index(/[a-z]/i)
       puts 'Sorry, must enter at least one word character, a-z...'
     end
@@ -174,13 +173,13 @@ class Human < Player
   end
 
   def assign_choice(choice)
-    case choice
-    when 'rock' then self.move = Rock.new
-    when 'paper' then self.move = Paper.new
-    when 'scissors' then self.move = Scissors.new
-    when 'lizard' then self.move = Lizard.new
-    when 'spock' then self.move = Spock.new
-    end
+    self.move = case choice
+                when 'rock' then self.move = Rock.new
+                when 'paper' then self.move = Paper.new
+                when 'scissors' then self.move = Scissors.new
+                when 'lizard' then self.move = Lizard.new
+                when 'spock' then self.move = Spock.new
+                end
   end
 
   def display_input_tips
@@ -224,21 +223,32 @@ class Computer < Player
   end
 end
 
-# RPS
-class RPSGame
-  attr_accessor :human, :computer
-
-  def initialize
-    @human = Human.new
-    @computer = Computer.new
-  end
-
+# show info
+module Display
   def display_welcome_message
     puts 'Welcome to Rock, Paper, Scissors, Spock, Scissors!'
   end
 
   def display_goodbye_message
     puts 'Thans for playing Rock, Paper, Scissors, Spock, Scissors. Good bye!'
+  end
+
+  def display_a_line
+    puts '~~~~~~~~~~~~~~~~~'
+  end
+end
+
+# RPS
+class RPSGame
+  include Display
+
+  attr_accessor :human, :computer
+
+  POINTS = 10 # Whoever reaches 10 points first wins
+
+  def initialize
+    @human = Human.new
+    @computer = Computer.new
   end
 
   def display_moves
@@ -276,8 +286,7 @@ class RPSGame
       puts 'Sorry, must be y or n.'
     end
 
-    return false if answer == 'n'
-    return true if answer == 'y'
+    answer == 'y'
   end
 
   def add_one_point(player)
@@ -298,10 +307,6 @@ class RPSGame
     end
   end
 
-  def display_a_line
-    puts '~~~~~~~~~~~~~~~~~'
-  end
-
   def display_points
     display_a_line
     puts "#{human.name} get === #{human.scores.points} points ==="
@@ -315,8 +320,8 @@ class RPSGame
 
   def display_history
     display_a_line
-    puts "The history of #{human.name} is #{human.history.to_s}"
-    puts "The history of #{computer.name} is #{computer.history.to_s}"
+    puts "The history of #{human.name} is #{human.history.display}"
+    puts "The history of #{computer.name} is #{computer.history.display}"
   end
 
   def display_win_round
@@ -345,6 +350,7 @@ class RPSGame
       display_winner
       display_win_round
       break unless play_again?
+      system 'clear'
     end
     display_goodbye_message
   end
